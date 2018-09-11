@@ -469,8 +469,3 @@ _Pvt_Extensions
 .vscode/*
 .vs/
 
-Petra.TransferAgency.Web/appsettings.Development.json
-Petra.TransferAgency.Web/appsettings.json
-Petra.TransferAgency.Web/logs/*.json
-Petra.TransferAgency.BackgroundService/logs/*.json
-appsettings.Development.json
