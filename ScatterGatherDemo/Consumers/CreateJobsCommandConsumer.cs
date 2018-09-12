@@ -50,19 +50,17 @@ namespace ScatterGatherDemo.Consumers
             var doJobEndpoint = await context.GetSendEndpoint(new Uri("loopback://localhost/do_job")).ConfigureAwait(false);
             foreach(var job in jobs)
             {
+                /// if we want, we can add all items before we start
+                /// we add the job id before enqueuing the job to prevent cases where the job finishes be we add it to the queue
+                /// in this case, the id will never get removed and we would be stuck in limbo
+                await redisDB.SetAddAsync($"{context.Message.CorrelationId}:JobList", job).ConfigureAwait(false);
+
                 //_logger.LogInformation("Enqueued: {Job}", job);
                 await doJobEndpoint.Send(new DoJobCommand
                 {
                     CorrelationId = context.Message.CorrelationId,
                     Job = job,
                 }).ConfigureAwait(false);
-
-                /// we can use something like an rx buffer here to batch messages so we don't keep hitting redis
-                /// a good tradeoff could be the last 10 messages
-                /// we add the job only after the message is sent
-                /// if retried, we can safely requeue the job
-                /// make sure your job processors are idempotent
-                await redisDB.SetAddAsync($"{context.Message.CorrelationId}:JobList", job).ConfigureAwait(false);
             }
             _logger.LogInformation("All jobs enqueued");
 
